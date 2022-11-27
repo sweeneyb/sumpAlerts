@@ -11,7 +11,26 @@ To flash the program:
 particle flash <particle_name> src\sumpAlerts.ino
 ```
 
+# Pushbullet integration
+See https://particle.hackster.io/gusgonnet/add-push-notifications-to-your-hardware-41fa5e for info on setting up the webhook:
 
+```
+{
+  "eventName": "pushbullet",
+  "url": "https://api.pushbullet.com/v2/pushes",
+  "requestType": "POST",
+  "headers": {
+    "Authorization": "Bearer 123456789012345678901234567890",
+    "Content-Type": "application/json"
+  },
+  "json": {
+      "type": "note",
+      "title": "{{SPARK_EVENT_VALUE}}",
+      "body": ""
+  },
+  "mydevices": true
+}
+```
 
 # SumpAlerts
 
