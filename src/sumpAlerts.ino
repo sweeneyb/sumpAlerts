@@ -2,10 +2,12 @@ bool isNotificationPending = false;
 SystemSleepConfiguration config;
 
 void setup() {
-  Particle.publish(getPumpStatusString());
+  pinMode(D5, INPUT_PULLUP);
+
+  Particle.publish("status", getPumpStatusString("Startup: "));
   config.mode(SystemSleepMode::STOP)
       .duration(500ms);
-  pinMode(D5, INPUT_PULLUP);
+  
   attachInterrupt(D5, pumpStatusChanged, CHANGE);
 }
 
@@ -15,11 +17,12 @@ void pumpStatusChanged() {
 }
 
 void loop() {
+  String prefix = "Pump status change: ";
   SystemSleepResult result = System.sleep(config);
 
   if(isNotificationPending) {
-    Particle.publish(getPumpStatusString());
-    Particle.publish("pushbullet", getPumpStatusString());
+    Particle.publish("status", getPumpStatusString(prefix));
+    Particle.publish("pushbullet", getPumpStatusString(prefix));
     isNotificationPending = false;
   }
 }
@@ -28,9 +31,9 @@ bool getPumpStatus() {
   return !digitalRead(D5);
 }
 
-String getPumpStatusString() {
+String getPumpStatusString(String prefix) {
   bool pin = getPumpStatus();
-  String status = "pump changed.  Running: ";
+  String status = prefix + "  Running: ";
   if(pin) {
     status += "true";
   } else {
