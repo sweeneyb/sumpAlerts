@@ -8,7 +8,7 @@ particle list
 
 To flash the program:
 ```
-particle flash hobo_bobcat src\sumpAlerts.ino
+particle flash <particle_name> src\sumpAlerts.ino
 ```
 
 
