@@ -1,8 +1,8 @@
-bool isNotificationPending = false;
 bool isRunning = false;
-bool sendFlakeAlert = false;
 SystemSleepConfiguration loopSleep;
 SystemSleepConfiguration debounceSleep;
+
+bool interruptFired = false;
 
 
 void setup() {
@@ -20,38 +20,28 @@ void setup() {
 
 
 void pumpStatusChanged() {
-  if (isRunning != isPumpRunning() ) {
-    isNotificationPending = true;
-  } else {
-    sendFlakeAlert = true;
-  }
-  isRunning = isPumpRunning();
-
+  interruptFired = true;
 }
 
 void loop() {
   String prefix = "Pump status change: ";
   SystemSleepResult result = System.sleep(loopSleep);
 
-  if(sendFlakeAlert) {
-    Particle.publish("status", "flake alert");
-    sendFlakeAlert = false;
-  }
-
-  if(isNotificationPending) {
-    Particle.publish("status", getPumpStatusString(prefix));
-    if (isRunning) {
-      Particle.publish("status", "Interrupt running: true");
-    } else {
-      Particle.publish("status", "Interrupt running: false");
-    }
-    bool running = isPumpRunning();
+  if (interruptFired){
+    bool tmpRead = isPumpRunning();
     SystemSleepResult result = System.sleep(debounceSleep);
-    if(running == isPumpRunning() ) {
-      
-      Particle.publish("pushbullet", getPumpStatusString(prefix));
+    if ( tmpRead == isPumpRunning() ) {
+      if( tmpRead != isRunning ) {
+        isRunning = tmpRead;
+        Particle.publish("status", getPumpStatusString(prefix));
+        Particle.publish("pushbullet", getPumpStatusString(prefix));
+      } else {
+        // nothing. pump status didn't change.
+      }
+    } else {
+      Particle.publish("status", "flake alert");
     }
-    isNotificationPending = false;
+
   }
 }
 
